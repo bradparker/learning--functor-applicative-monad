@@ -1,0 +1,12 @@
+{
+  "name": "functors-applicatives-monads",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "test": "mocha **/__tests__/*-test.js"
+  },
+  "devDependencies": {
+    "mocha": "^3.2.0"
+  }
+}
