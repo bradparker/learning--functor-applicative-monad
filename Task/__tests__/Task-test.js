@@ -10,7 +10,8 @@ const {
   Task,
   run,
   map,
-  bind
+  bind,
+  apply
 } = require('../')
 
 describe('Task', () => {
@@ -82,6 +83,98 @@ describe('Task', () => {
           run(b, testDone, (result) => {
             assert.equal('FooBar', result)
             testDone()
+          })
+        })
+      })
+    })
+  })
+
+  describe('Applicative', () => {
+    describe('apply(applicative, instance)', () => {
+      describe('when applicative is a Task Right', () => {
+        describe('when instance is a Task Right', () => {
+          it('returns a new Task containing the result of calling the value of the applicative on the value of the instance', (testDone) => {
+            const applicative = Task((done) => {
+              setTimeout(() => {
+                done(Right(x => x * 2))
+              }, 10)
+            })
+
+            const instance = Task((done) => {
+              setTimeout(() => {
+                done(Right(3))
+              }, 10)
+            })
+
+            run(apply(applicative, instance), testDone, (result) => {
+              assert.equal(6, result)
+              testDone()
+            })
+          })
+        })
+
+        describe('when instance is a Task Left', () => {
+          it('returns a new Task Left', (testDone) => {
+            const applicative = Task((done) => {
+              setTimeout(() => {
+                done(Right(x => x * 2))
+              }, 10)
+            })
+
+            const instance = Task((done) => {
+              setTimeout(() => {
+                done(Left(-1))
+              }, 10)
+            })
+
+            run(apply(applicative, instance), (result) => {
+              assert.equal(-1, result)
+              testDone()
+            }, testDone)
+          })
+        })
+      })
+
+      describe('when applicative is a Task Left', () => {
+        describe('when instance is a Task Left', () => {
+          it('returns a new Task Left', (testDone) => {
+            const applicative = Task((done) => {
+              setTimeout(() => {
+                done(Left('Nah'))
+              }, 10)
+            })
+
+            const instance = Task((done) => {
+              setTimeout(() => {
+                done(Left(6))
+              }, 10)
+            })
+
+            run(apply(applicative, instance), (result) => {
+              assert.equal('Nah', result)
+              testDone()
+            }, testDone)
+          })
+        })
+
+        describe('when instance is a Task Left', () => {
+          it('returns a new Task Left', (testDone) => {
+            const applicative = Task((done) => {
+              setTimeout(() => {
+                done(Left('Double nah'))
+              }, 10)
+            })
+
+            const instance = Task((done) => {
+              setTimeout(() => {
+                done(Left('Nooooop'))
+              }, 10)
+            })
+
+            run(apply(applicative, instance), (result) => {
+              assert.equal('Double nah', result)
+              testDone()
+            }, testDone)
           })
         })
       })

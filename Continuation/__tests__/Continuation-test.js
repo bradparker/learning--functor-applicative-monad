@@ -5,6 +5,7 @@ const {
   Continuation,
   run,
   map,
+  apply,
   bind
 } = require('../')
 
@@ -26,7 +27,7 @@ describe('Continuation', () => {
 
   describe('Functor', () => {
     describe('map(function, instance)', () => {
-      it('returns a new Just containing the value returned by calling the provided function with the old value', (testDone) => {
+      it('returns a new Continuation containing the value returned by calling the provided function with the old value', (testDone) => {
         const a = Continuation((done) => {
           setTimeout(() => {
             done('Foo')
@@ -39,6 +40,49 @@ describe('Continuation', () => {
 
         run(b, (result) => {
           assert.equal('FooBar', result)
+          testDone()
+        })
+      })
+    })
+  })
+
+  describe('Applicative', () => {
+    describe('apply(applicative, instance)', () => {
+      it('applies the eventual value of applicative to the eventual value of instance', (testDone) => {
+        const applicative = Continuation((done) => {
+          setTimeout(() => {
+            done(x => x * 2)
+          }, 10)
+        })
+        const instance = Continuation((done) => {
+          setTimeout(() => {
+            done(2)
+          }, 10)
+        })
+
+        run(apply(applicative, instance), (result) => {
+          assert.equal(4, result)
+          testDone()
+        })
+      })
+
+      it('executes applicative and instance concurrently', (testDone) => {
+        const start = new Date()
+
+        const applicative = Continuation((done) => {
+          setTimeout(() => {
+            done(x => x * 2)
+          }, 100)
+        })
+        const instance = Continuation((done) => {
+          setTimeout(() => {
+            done(2)
+          }, 100)
+        })
+
+        run(apply(applicative, instance), (_) => {
+          const end = new Date()
+          assert(end - start < 200)
           testDone()
         })
       })

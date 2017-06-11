@@ -16,6 +16,17 @@ const map = (fn, instance) => (
   ), instance)
 )
 
+const apply = (applicative, instance) => (
+  Task((done) => (
+    Continuation.run(
+      Continuation.concurrent(applicative, instance),
+      ([fEither, vEither]) => (
+        done(Either.apply(fEither, vEither))
+      )
+    )
+  ))
+)
+
 // const bind = (instance, fn) => (
 //   Task((done) => (
 //     run(instance, (error) => (
@@ -53,6 +64,7 @@ module.exports = {
   run,
   map,
   bind,
+  apply,
   ret,
   fail
 }

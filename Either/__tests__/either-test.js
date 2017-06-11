@@ -8,6 +8,7 @@ const {
   Left,
   map,
   bind,
+  apply,
   run
 } = require('../')
 
@@ -46,13 +47,57 @@ describe('Either', () => {
     })
   })
 
-  const safeDivide = a => b => (
-    b === 0
-      ? Left('Divide by zero error')
-      : Right(a / b)
-  )
+  describe('Applicative', () => {
+    describe('apply(applicative, instance)', () => {
+      describe('when applicative is a Left', () => {
+        describe('when instance is a Left', () => {
+          it('returns a new Left', () => {
+            const applicative = Left(-1)
+            const instance = Left(-1)
+            const result = apply(applicative, instance)
+            assert.equal(-1, run(result, id, id))
+          })
+        })
+
+        describe('when instance is a Right', () => {
+          it('returns a new Left', () => {
+            const applicative = Left(-1)
+            const instance = Right(4)
+            const result = apply(applicative, instance)
+            assert.equal(-1, run(result, id, id))
+          })
+        })
+      })
+
+      describe('when applicative is a Right', () => {
+        describe('when instance is a Left', () => {
+          it('returns a new Left', () => {
+            const applicative = Right(a => a + 2)
+            const instance = Left(-1)
+            const result = apply(applicative, instance)
+            assert.equal(-1, run(result, id, id))
+          })
+        })
+
+        describe('when instance is a Right', () => {
+          it('returns the applicative applied to the value', () => {
+            const applicative = Right(a => a + 2)
+            const instance = Right(4)
+            const result = apply(applicative, instance)
+            assert.equal(6, run(result, id, id))
+          })
+        })
+      })
+    })
+  })
 
   describe('Monad', () => {
+    const safeDivide = a => b => (
+      b === 0
+        ? Left('Divide by zero error')
+        : Right(a / b)
+    )
+
     describe('bind(instance, function)', () => {
       describe('when instance is a Right', () => {
         it('returns the Maybe returned from calling the provided function with the old value', () => {
